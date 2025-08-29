@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MendelJavaCodingChallengeLucasSanzGorostiagaApplication {
+public class Main {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MendelJavaCodingChallengeLucasSanzGorostiagaApplication.class, args);
+		SpringApplication.run(Main.class, args);
 	}
 
 }
