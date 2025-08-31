@@ -1,13 +1,13 @@
 package mendel.challenge.java.lucas_sanz_gorostiaga;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 import mendel.challenge.java.lucas_sanz_gorostiaga.model.Transaction;
 
 @Data
 public class Db {
-    private HashMap<Long, Transaction> transactionsById;
-    private HashMap<String, ArrayList<Transaction>> transactionsByType;
+    private Map<Long, Transaction> transactionsById;
+    private Map<String, List<Long>> transactionIdsByType;
 }
