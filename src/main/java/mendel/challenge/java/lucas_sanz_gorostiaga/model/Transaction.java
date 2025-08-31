@@ -15,5 +15,6 @@ public class Transaction {
     private long id;
     private double amount;
     private String type;
-    private Optional<Long> parentId;
+    private Optional<Transaction> parent = Optional.of(null);
+    private Double descendantsSum = 0.0;
 }
