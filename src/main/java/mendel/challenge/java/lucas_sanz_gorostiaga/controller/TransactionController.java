@@ -30,8 +30,11 @@ public class TransactionController {
     }
 
     @PutMapping("/{transactionId}")
-    public ResponseEntity<String> putTransaction(@Valid @RequestBody TransactionBody body) {
-        boolean successfullyInserted = transactionService.insertTransaction(body);
+    public ResponseEntity<String> putTransaction(
+            @Valid @RequestBody TransactionBody body,
+            @PathVariable Long transactionId
+    ) {
+        boolean successfullyInserted = transactionService.insertTransaction(body, transactionId);
 
         if (!successfullyInserted) {
             return new ResponseEntity<>("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);

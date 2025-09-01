@@ -4,24 +4,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import mendel.challenge.java.lucas_sanz_gorostiaga.Db;
 import mendel.challenge.java.lucas_sanz_gorostiaga.controller.TransactionBody;
 import mendel.challenge.java.lucas_sanz_gorostiaga.model.Transaction;
+import mendel.challenge.java.lucas_sanz_gorostiaga.repository.TransactionRepository;
 
 
 @Service
 public class TransactionService {
-    private final Db db;
+    private final TransactionRepository transactionRepository;
 
-    public TransactionService(Db db) {
-        this.db = db;
+    @Autowired
+    public TransactionService(TransactionRepository transactionRepository) {
+        this.transactionRepository = transactionRepository;
     }
 
 
-    public boolean insertTransaction(TransactionBody transactionBody) {
-        Transaction transaction = createTransactionFromTransactionBody(transactionBody);
+    public boolean insertTransaction(TransactionBody transactionBody, Long transactionId) {
+        Transaction transaction = createTransactionFromTransactionBody(transactionBody, transactionId);
 
         return insertTransactionInTransactionByTypeMap(transaction)
             && insertTransactionInTransactionByIdMap(transaction);
@@ -30,14 +32,17 @@ public class TransactionService {
     private boolean insertTransactionInTransactionByTypeMap(Transaction transaction) {
         String transactionType = transaction.getType();
 
-        return db.getTransactionIdsByType()
-            .computeIfAbsent(transactionType, t -> new ArrayList<Long>())
+        return transactionRepository.getTransactionIdsByType()
+            .computeIfAbsent(transactionType, t -> new ArrayList<>())
             .add(transaction.getId());
     }
 
     private boolean insertTransactionInTransactionByIdMap(Transaction transaction) {
         Long transactionId = transaction.getId();
-        boolean successfullyInserted = db.getTransactionsById().putIfAbsent(transactionId, transaction) == null;
+        boolean successfullyInserted = transactionRepository
+            .getTransactionsById()
+            .putIfAbsent(transactionId, transaction) == null;
+
         if (!successfullyInserted) {
             return false;
         }
@@ -58,22 +63,28 @@ public class TransactionService {
         }
     }
 
-    private Transaction createTransactionFromTransactionBody(TransactionBody transactionBody) {
+    private Transaction createTransactionFromTransactionBody(TransactionBody transactionBody, Long transactionId) {
         Transaction transaction = new Transaction();
-        Optional<Transaction> parent = Optional.ofNullable(db.getTransactionsById().get(transactionBody.parentId));
+
+        if (transactionBody.parentId != null) {
+            Optional<Transaction> parent = Optional.ofNullable(transactionRepository.getTransactionsById()
+                    .get(transactionBody.parentId));
+            transaction.setParent(parent);
+        }
+
+        transaction.setId(transactionId);
         transaction.setAmount(transactionBody.amount);
-        transaction.setParent(parent);
         transaction.setType(transactionBody.type);
 
         return transaction;
     }
 
     public Optional<List<Long>> getTransactionIdsByType(String type) {
-        return Optional.ofNullable(db.getTransactionIdsByType().get(type));
+        return Optional.ofNullable(transactionRepository.getTransactionIdsByType().get(type));
     }
 
     public Double getTransactionDescendantsSum(Long transactionId) {
-        return Optional.ofNullable(db.getTransactionsById().get(transactionId))
+        return Optional.ofNullable(transactionRepository.getTransactionsById().get(transactionId))
             .map(Transaction::getDescendantsSum)
             .orElse(0.0);
     }
