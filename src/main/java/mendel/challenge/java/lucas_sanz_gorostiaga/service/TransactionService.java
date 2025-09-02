@@ -56,11 +56,11 @@ public class TransactionService {
     }
 
     private void updateAscendantTransactions(Transaction transaction) {
-        Optional<Transaction> parent = transaction.getParent();
+        Transaction parent = transaction.getParent();
         Double transactionAmount = transaction.getAmount();
 
-        while (parent.isPresent()) {
-            Transaction parentValue = parent.get();
+        while (parent != null) {
+            Transaction parentValue = parent;
             parentValue.setDescendantsSum(parentValue.getDescendantsSum() + transactionAmount);
             parent = parentValue.getParent();
         }
@@ -72,12 +72,13 @@ public class TransactionService {
             parent = Optional.ofNullable(transactionRepository.getTransactionsById().get(transactionBody.parentId));
         }
 
-        return Transaction.builder()
+        Transaction.TransactionBuilder builder = Transaction.builder()
                 .id(transactionId)
-                .parent(parent)
                 .amount(transactionBody.amount)
-                .type(transactionBody.type)
-                .build();
+                .type(transactionBody.type);
+        parent.ifPresent(builder::parent);
+
+        return builder.build();
     }
 
     public List<Long> getTransactionIdsByType(String type) {

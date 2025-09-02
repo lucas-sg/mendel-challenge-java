@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,7 +62,7 @@ class MainTests {
         assertThat(response.getBody()).isInstanceOf(String.class);
 
         Transaction transaction = repository.getTransactionsById().get(transactionId);
-        assertThat(transaction.getParent()).isEmpty();
+        assertThat(transaction.getParent()).isNull();
         assertThat(transaction.getAmount()).isEqualTo(transactionAmount);
         assertThat(transaction.getType()).isEqualTo(transactionType);
         assertThat(transaction.getId()).isEqualTo(transactionId);
@@ -85,7 +84,6 @@ class MainTests {
         String parentType = "planes";
         Transaction mockedParent = Transaction.builder()
                 .id(parentId)
-                .parent(Optional.empty())
                 .descendantsSum(0.0)
                 .build();
         Map<Long, Transaction> mockedMap = new ConcurrentHashMap<>(Map.of(parentId, mockedParent));
@@ -107,8 +105,8 @@ class MainTests {
         assertThat(response.getBody()).isInstanceOf(String.class);
 
         Transaction transaction = repository.getTransactionsById().get(transactionId);
-        assertThat(transaction.getParent()).isPresent();
-        assertThat(transaction.getParent().get().getId()).isEqualTo(parentId);
+        assertThat(transaction.getParent()).isNotNull();
+        assertThat(transaction.getParent().getId()).isEqualTo(parentId);
         assertThat(transaction.getAmount()).isEqualTo(transactionAmount);
         assertThat(transaction.getType()).isEqualTo(transactionType);
         assertThat(transaction.getId()).isEqualTo(transactionId);
