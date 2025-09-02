@@ -1,6 +1,5 @@
 package mendel.challenge.java.lucas_sanz_gorostiaga.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -45,7 +44,7 @@ public class TransactionController {
 
     @GetMapping("/types/{type}")
     public List<Long> getTransactionsByType(@PathVariable String type) {
-        return transactionService.getTransactionIdsByType(type).orElse(new ArrayList<>());
+        return transactionService.getTransactionIdsByType(type);
     }
 
     @GetMapping("/sum/{transactionId}")

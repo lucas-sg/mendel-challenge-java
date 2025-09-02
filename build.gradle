@@ -39,3 +39,8 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+test {
+    // Add the Mockito agent
+    jvmArgs "-javaagent:${classpath.find { it.name.contains("byte-buddy-agent") }.path}"
+}

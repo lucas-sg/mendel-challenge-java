@@ -11,7 +11,6 @@ import mendel.challenge.java.lucas_sanz_gorostiaga.controller.TransactionBody;
 import mendel.challenge.java.lucas_sanz_gorostiaga.model.Transaction;
 import mendel.challenge.java.lucas_sanz_gorostiaga.repository.TransactionRepository;
 
-
 @Service
 public class TransactionService {
     private final TransactionRepository transactionRepository;
@@ -23,6 +22,10 @@ public class TransactionService {
 
 
     public boolean insertTransaction(TransactionBody transactionBody, Long transactionId) {
+        if (transactionRepository.getTransactionsById().get(transactionId) != null) {
+            throw new ResourceAlreadyExistsException("Transaction with id " + transactionId + " already exists");
+        }
+
         Transaction transaction = createTransactionFromTransactionBody(transactionBody, transactionId);
 
         return insertTransactionInTransactionByTypeMap(transaction)
@@ -64,23 +67,21 @@ public class TransactionService {
     }
 
     private Transaction createTransactionFromTransactionBody(TransactionBody transactionBody, Long transactionId) {
-        Transaction transaction = new Transaction();
-
+        Optional<Transaction> parent = Optional.empty();
         if (transactionBody.parentId != null) {
-            Optional<Transaction> parent = Optional.ofNullable(transactionRepository.getTransactionsById()
-                    .get(transactionBody.parentId));
-            transaction.setParent(parent);
+            parent = Optional.ofNullable(transactionRepository.getTransactionsById().get(transactionBody.parentId));
         }
 
-        transaction.setId(transactionId);
-        transaction.setAmount(transactionBody.amount);
-        transaction.setType(transactionBody.type);
-
-        return transaction;
+        return Transaction.builder()
+                .id(transactionId)
+                .parent(parent)
+                .amount(transactionBody.amount)
+                .type(transactionBody.type)
+                .build();
     }
 
-    public Optional<List<Long>> getTransactionIdsByType(String type) {
-        return Optional.ofNullable(transactionRepository.getTransactionIdsByType().get(type));
+    public List<Long> getTransactionIdsByType(String type) {
+        return Optional.ofNullable(transactionRepository.getTransactionIdsByType().get(type)).orElse(new ArrayList<>());
     }
 
     public Double getTransactionDescendantsSum(Long transactionId) {
